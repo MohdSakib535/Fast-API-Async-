@@ -129,3 +129,86 @@ users = result.scalars().all()
 
 - Use `joinedload` when the relationship is small and tight (e.g., user -> role).
 - Use `selectinload` when you're loading collections or want to avoid JOIN overhead.
+
+
+############################################################################################
+
+
+
+## ✅ Row Duplication & Large JOINs in SQLAlchemy
+
+When using `joinedload()` with one-to-many relationships (e.g., `User → Books`), SQLAlchemy creates a JOIN query that causes **row duplication**.
+
+---
+
+### 🔍 Scenario:
+- 1 User (`Alice`)
+- 3 Books (`Book A`, `Book B`, `Book C`)
+
+---
+
+### ⚠️ Using `joinedload(User.books)`:
+
+SQL Query:
+```sql
+SELECT users.id, users.name, books.id, books.title
+FROM users
+LEFT OUTER JOIN books ON users.id = books.user_id
+WHERE users.id = 1;
+```
+
+Result:
+| users.id | users.name | books.id | books.title |
+|----------|------------|----------|-------------|
+| 1        | Alice      | 101      | Book A      |
+| 1        | Alice      | 102      | Book B      |
+| 1        | Alice      | 103      | Book C      |
+
+➡️ **User data is repeated for each book**
+
+📌 This is called **row duplication** and:
+- Slows down performance
+- Requires `.unique()` in SQLAlchemy to deduplicate rows
+- Can be problematic if there are many child records
+
+---
+
+### ✅ Using `selectinload(User.books)`:
+
+SQLAlchemy runs **two separate queries**:
+
+Query 1:
+```sql
+SELECT * FROM users WHERE id = 1;
+```
+
+Query 2:
+```sql
+SELECT * FROM books WHERE user_id IN (1);
+```
+
+➡️ No duplication
+➡️ Efficient in memory
+➡️ Preferred for one-to-many relationships
+
+---
+
+### 📊 Example: 1000 users, 50 books each
+
+- With `joinedload`: 1000 × 50 = **50,000 joined rows**
+- With `selectinload`: 1 query for 1000 users + 1 query for 50,000 books
+
+✅ `selectinload` scales better and avoids row explosion
+
+---
+
+## 🧠 Summary
+
+| Term                | Explanation |
+|---------------------|-------------|
+| **Row duplication** | Repeating parent rows (e.g., User) for each child (e.g., Book) |
+| **Large JOINs**     | One big query that returns excessive rows |
+| **selectinload**    | Uses separate optimized queries (best for one-to-many) |
+| **joinedload**      | Single query with JOIN (use for one-to-one or small collections) |
+
+---

@@ -1,5 +1,6 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional,List
+from ..books.schemas import BookBase
 
 class UserId(BaseModel):
     id:int
@@ -41,9 +42,17 @@ class meResponse(BaseModel):
     name: str
     email: str
     role: RoleResponse  # Nested role object
+    
 
     class Config:
         from_attributes = True
+
+class meBookResponse(meResponse):
+    books: Optional[List[BookBase]] = None
+
+    class Config:
+        from_attributes = True
+
 
 
 class UserBase(BaseModel):
@@ -70,8 +79,14 @@ class Getuser(BaseModel):
     email:str
 
 
-class UserResponse(meResponse):
-    pass
+class UserResponse(BaseModel):
+    id: int
+    name: str
+    email: str
+    role_id:int
+    
+    class Config:
+        from_attributes = True
 
 
 

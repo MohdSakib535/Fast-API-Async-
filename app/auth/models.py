@@ -34,7 +34,7 @@ class User(Base):
 
 
     role: Mapped["Role"] = relationship(back_populates="users")
-    books: Mapped[list["Book"]] = relationship(back_populates="user")
+    books: Mapped[list["Book"]] = relationship(back_populates="user")   # lazy='select' by default
 
     def __repr__(self)->str:
         return f"User(id={self.id!r},name={self.name!r})"

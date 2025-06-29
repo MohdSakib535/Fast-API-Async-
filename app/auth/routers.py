@@ -21,15 +21,17 @@ user_router = APIRouter(
 
 @user_router.post("/create",response_model=UserResponse,status_code=status.HTTP_201_CREATED)
 async def Create_user(userData: CreateUser,db: AsyncSession = Depends(get_db)):
-    try:
-      return await user_service.create_user_view(userData,db)
-    except Exception as e:
-        print(f"Error creating user: {e.__class__.__name__}: {e}")
-        raise HTTPException(
+    user_details=await user_service.create_user_view(userData,db)
+    return user_details
+    # try:
+    #   return await user_service.create_user_view(userData,db)
+    # except Exception as e:
+    #     print(f"Error creating user: {e.__class__.__name__}: {e}")
+    #     raise HTTPException(
             
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Failed to create user: {type(e).__name__}"
-        )
+    #         status_code=status.HTTP_400_BAD_REQUEST,
+    #         detail=f"Failed to create user: {type(e).__name__}"
+    #     )
        
 
 
@@ -41,36 +43,36 @@ from fastapi.responses import JSONResponse
 from .security import create_access_token2
 from datetime import timedelta
 from datetime import datetime
+from ..config.errors import InvalidCredentials
 
 
 
 @user_router.post("/login", )
 async def login(request: UserLoginModel,db:AsyncSession=Depends(get_db)):
     email=request.email
-    print("-----------",email)
+    # print("-----------",email)
     user_data=await user_service.get_user_by_email(email,db)
-    print("us----",user_data)
+    # print("us----",user_data)
     if user_data is not None:
         password_valid=Hash.verify_password(user_data.password,request.password)
         if password_valid:
             access_token = create_access_token2(user_data={'user_id':user_data.id,'email':user_data.email,"name":user_data.name})
-
-
-    refresh_token = create_access_token2(user_data={'user_id':user_data.id,'email':user_data.email,"name":user_data.name},refresh=True,expiry=timedelta(days=2))
+            refresh_token = create_access_token2(user_data={'user_id':user_data.id,'email':user_data.email,"name":user_data.name},refresh=True,expiry=timedelta(days=2))
     
-    return JSONResponse(
-        content={
-        "message":"Login Successfully",
-        "access_token": access_token,
-        "refresh_token":refresh_token,
-        "user_data":{
-            "user_id":user_data.id,
-            "email":user_data.email,
-            "name":user_data.name
-        }
-        }
-       
-    ) 
+            return JSONResponse(
+                content={
+                "message":"Login Successfully",
+                "access_token": access_token,
+                "refresh_token":refresh_token,
+                "user_data":{
+                    "user_id":user_data.id,
+                    "email":user_data.email,
+                    "name":user_data.name
+                }
+                }
+            
+            ) 
+    raise InvalidCredentials()
 
 
 
@@ -123,11 +125,16 @@ async def get_particular_user(db:AsyncSession=Depends(get_db)):
 
 
 
-
-@user_router.get('/me',response_model=meResponse)
+from pydantic import ValidationError
+@user_router.get('/me',response_model=meBookResponse)
 async def get_current_user_data(user=Depends(get_current_user)):
-    print('user in ro------',user)
-    return user
+    try:
+        print("user--------",user)
+        
+        return user
+    except ValidationError as e:
+        print("Validation error:", e)
+        return JSONResponse(status_code=500, content=e.errors())
 
 
 

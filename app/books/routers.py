@@ -17,18 +17,26 @@ book_router = APIRouter(
 async def create_book(
     book: BookCreate,
     db: AsyncSession = Depends(get_db),
+    token_details: dict = Depends(AccessTokenBearer()),
     # current_user:CreateUser=Depends(get_current_user)
 ):
     """Create a new book"""
-    try:
-        return await create_book_views(db, book,current_user=18)
-    except Exception as e:
-        print(f"Error creating book: {e.__class__.__name__}: {e}")
-        raise HTTPException(
+    user_data=token_details
+    user_id=user_data.get("user")['user_id']
+    return await create_book_views(db, book,current_user=user_id)
+    
+    # try:
+    #     user_data=token_details
+    #     user_id=user_data.get("user")['user_id']
+    #     # print("--userdata-----",user_data.get("user")['user_id'])
+    #     return await create_book_views(db, book,current_user=user_id)
+    # except Exception as e:
+    #     print(f"Error creating book: {e.__class__.__name__}: {e}")
+    #     raise HTTPException(
             
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Failed to create book: {type(e).__name__}"
-        )
+    #         status_code=status.HTTP_400_BAD_REQUEST,
+    #         detail=f"Failed to create book: {type(e).__name__}"
+    #     )
     
 
 

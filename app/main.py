@@ -1,10 +1,10 @@
-from fastapi import FastAPI,Header
+from fastapi import FastAPI,Header,HTTPException
 from app.Database.session import get_db,engine
 from contextlib import asynccontextmanager
 from app.books.routers import  book_router
 from app.Database .async_verification_routers import verification_router
 from .auth.routers import user_router
-
+from .config.errors import *
 
 
 """
@@ -43,6 +43,15 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan
 )
+
+
+
+register_all_errors(app)
+
+
+
+
+
 
 
 app.include_router(book_router)

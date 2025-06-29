@@ -10,6 +10,9 @@ class BookBase(BaseModel):
     page_count: int
     language: str
 
+    class Config:
+        from_attributes = True
+
 
 class BookCreate(BookBase):
     pass

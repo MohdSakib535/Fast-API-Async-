@@ -9,6 +9,7 @@ from sqlalchemy import select
 from .models import User
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Request
+from ..config.errors import *
 
 SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
 ALGORITHM = "HS256"
@@ -69,7 +70,7 @@ class TokenBearer(HTTPBearer):
 
     async def __call__(self, request:Request):
         credentials: HTTPAuthorizationCredentials=  await super().__call__(request)
-        print("cred-------",credentials)
+        # print("cred-------",credentials)
         if credentials:
             if credentials.scheme!="Bearer":
               raise HTTPException(status_code=403, detail="Invalid authentication scheme.")
@@ -78,26 +79,28 @@ class TokenBearer(HTTPBearer):
         
 
         token_data=decode_token(token)
-        print("token_data========",token_data)
+        # print("token_data========",token_data)
             
         if not token_data:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Invalid or expired token"
-            )
+            raise InvalidToken()
+            # raise HTTPException(
+            #     status_code=status.HTTP_403_FORBIDDEN,
+            #     detail="Invalid or expired token"
+            # )
         
 
         from ..Database.redis import token_in_blocklist
 
         if await token_in_blocklist(token_data['jti']):
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail={
-                    "error":"this token is Invalid or expire",
-                    "Resolution":"please get new token"
+            raise RevokedToken()
+            # raise HTTPException(
+            #     status_code=status.HTTP_403_FORBIDDEN,
+            #     detail={
+            #         "error":"this token is Invalid or expire",
+            #         "Resolution":"please get new token"
 
-                }
-            )
+            #     }
+            # )
 
 
         
@@ -123,17 +126,19 @@ class TokenBearer(HTTPBearer):
 class AccessTokenBearer(TokenBearer):
     def verify_token_data(self, token_data: dict) -> None:
         if token_data and token_data['refresh']:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Please provide a access token"
-            )
+            raise AccessTokenRequired()
+            # raise HTTPException(
+            #     status_code=status.HTTP_403_FORBIDDEN,
+            #     detail="Please provide a access token"
+            # )
         
 
 class RefreshTokenBearer(TokenBearer):
     def verify_token_data(self, token_data: dict) -> None:
         if token_data and not token_data['refresh']:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Please provide a refresh token"
-            )
+            raise RefreshTokenRequired()
+            # raise HTTPException(
+            #     status_code=status.HTTP_403_FORBIDDEN,
+            #     detail="Please provide a refresh token"
+            # )
         

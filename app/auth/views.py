@@ -9,29 +9,56 @@ from ..auth.utils import Hash
 from fastapi.security import OAuth2PasswordRequestForm
 from .security import create_access_token2
 from sqlalchemy.orm import joinedload,selectinload
+from ..config.errors import *
 
 
 class UserService:
     async def get_user_by_email(self,email:str,db:AsyncSession):
-        stmt=await db.execute(select(User)
-            .options(joinedload(User.role))
-            .where(User.email==email))
-        print("-----",stmt)
-        user_data=stmt.scalars().first()
-        print("user------",user_data)
+
+        # stmt=(
+        #     select(User)
+        #     .where(User.email==email)
+        #     .options(
+        #         selectinload(User.role),
+        #         selectinload(User.books)
+        #     )
+        # )
+        # result=await db.execute(stmt)
+        # user_data=result.scalar_one_or_none()
+
+
+
+
+        ###################### or (but prefered upper) #####3
+
+
+        stmt = (
+            select(User)
+            .where(User.email == email)
+            .options(
+                joinedload(User.books),    # (okay only if you call `.unique()` and book count is small)
+                joinedload(User.role)      # 👈 (recommended)
+            )
+        )
+        result=await db.execute(stmt)
+        user_data=result.unique().scalar_one_or_none()
+
         return user_data
     
 
     async def create_user_view(self,userData:CreateUser,db:AsyncSession):
-        print("--------cre------",userData)
+        # print("--------cre------",userData)
         try:
             result=await db.execute(select(User).where(User.email==userData.email))
+            # print("result-----",result)
             existing_user=result.scalars().first()
+            print("exist-------",existing_user)
             if existing_user:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="User with this email already Exist"
-                )
+                raise UserAlreadyExists()
+                # raise HTTPException(
+                #     status_code=status.HTTP_400_BAD_REQUEST,
+                #     detail="User with this email already Exist"
+                # )
             
             #Hash Password
             hashed_password = Hash.bcrypt(userData.password)
@@ -43,20 +70,13 @@ class UserService:
                 role_id=userData.role
                 
             )
+            
 
             db.add(db_user)
             await db.commit()
             await db.refresh(db_user)
             return db_user
-        
-        except IntegrityError as e:
-            await db.rollback()
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="User with this email already exists."
-            )
-
-
+    
         except SQLAlchemyError as e:
             await db.rollback()
             raise HTTPException(
@@ -64,10 +84,7 @@ class UserService:
                 detail=f"Database error: {str(e)}"
             )
         
-        except Exception as e:
-            import traceback
-            traceback.print_exc()
-            return JSONResponse(status_code=500, content={"error": str(e)})
+        
     
     
 
