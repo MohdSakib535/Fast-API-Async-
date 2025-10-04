@@ -2,9 +2,11 @@ from fastapi import FastAPI,Header,HTTPException
 from app.Database.session import get_db,engine
 from contextlib import asynccontextmanager
 from app.books.routers import  book_router
-from app.Database .async_verification_routers import verification_router
+from app.Database.async_verification_routers import verification_router
 from .auth.routers import user_router
 from .config.errors import *
+from .middleware import SchemaValidationMiddleware, setup_middlewares
+from .seeder import seed_router
 
 
 """
@@ -47,16 +49,13 @@ app = FastAPI(
 
 
 register_all_errors(app)
-
-
-
-
-
-
+setup_middlewares(app)
+app.add_middleware(SchemaValidationMiddleware)
 
 app.include_router(book_router)
 app.include_router(verification_router)
 app.include_router(user_router)
+app.include_router(seed_router)
 
 
 

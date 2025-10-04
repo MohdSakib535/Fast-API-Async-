@@ -65,7 +65,7 @@ class UserBase(BaseModel):
 
 
 class UserWithRole(UserBase):
-    role: RoleOut | None
+    role: Optional[RoleOut] = None
 
 
 class AssignRole(BaseModel):

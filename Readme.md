@@ -1,3 +1,101 @@
+# ==========================================
+# ALEMBIC COMMANDS - COMPLETE REFERENCE
+# ==========================================
+
+# INITIAL SETUP
+# ==========================================
+pip install alembic
+alembic init alembic. (Creates Alembic configuration for synchronous database connections)
+alembic init -t async alembic (Creates Alembic configuration for async database connections)
+
+
+# CREATING MIGRATIONS
+# ==========================================
+alembic revision --autogenerate -m "description of changes". (mostly used)
+alembic revision -m "description of changes"
+alembic revision -m "description" --rev-id "custom_id"
+
+
+# RUNNING MIGRATIONS
+# ==========================================
+alembic upgrade head
+alembic upgrade +1
+alembic upgrade <revision_id>
+alembic upgrade head --sql
+alembic downgrade -1
+alembic downgrade <revision_id>
+alembic downgrade base
+
+
+# CHECKING STATUS
+# ==========================================
+alembic current
+alembic current -v
+alembic history
+alembic history -v
+alembic history -r <start>:<end>
+alembic history -r current:head
+
+
+# BRANCHING & MERGING
+# ==========================================
+alembic revision -m "branch description" --head <base_revision>@<branch_label>
+alembic merge -m "merge description" <rev1> <rev2>
+alembic branches
+
+
+# ADVANCED OPERATIONS
+# ==========================================
+alembic stamp head
+alembic stamp <revision_id>
+alembic edit <revision_id>
+alembic show <revision_id>
+alembic upgrade head --sql > migration.sql
+alembic -c path/to/alembic.ini upgrade head
+alembic -x dbname=mydb upgrade head
+
+
+# USEFUL PATTERNS
+# ==========================================
+alembic upgrade head --sql | less
+alembic upgrade head -v
+alembic revision --autogenerate -m "changes" --version-path ./versions
+alembic downgrade base && alembic upgrade head
+
+
+# REVISION FORMATS
+# ==========================================
+alembic upgrade abc123def456
+alembic upgrade +2
+alembic downgrade -3
+alembic upgrade head
+alembic downgrade base
+alembic downgrade head-1
+
+
+# QUICK TIPS
+# ==========================================
+# head = latest migration
+# base = no migrations applied
+# current = where you are now
+# +N/-N = relative movement
+# Always review auto-generated migrations!
+# --autogenerate doesn't catch everything (column alterations, renames, etc.)
+
+
+# MOST COMMONLY USED
+# ==========================================
+alembic revision --autogenerate -m "message"
+alembic upgrade head
+alembic current
+alembic history
+alembic downgrade -1
+
+
+
+
+#########################  end alembic commands #########################
+
 1.scalar():
     This method is used to execute a query and return the first element of the first result, or None if there are no results.
     It does not raise an exception if no rows are returned; it simply returns None.

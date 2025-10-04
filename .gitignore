@@ -2,3 +2,7 @@ fastenv
 __pycache__/
 *.pyc
 app/*__pycache__
+myenv
+*.DS_Store
+migrations/versions/*.py
+migrations/versions/*.pyc

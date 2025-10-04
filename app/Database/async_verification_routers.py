@@ -1,19 +1,20 @@
+"""Endpoints that help verify asynchronous behaviour and run load tests."""
+
 import asyncio
-import time
-import httpx
-import threading
-from concurrent.futures import ThreadPoolExecutor
-import psutil
 import os
-from sqlalchemy.ext.asyncio import AsyncSession
+import threading
+import time
+
+from fastapi import APIRouter
+
+from app.Database.load_test import LoadTestConfig, LoadTestResult, run_load_test
 from app.books.views import get_books_views
 from app.Database.session import AsyncSessionLocal
-from fastapi import APIRouter
 
 
 verification_router = APIRouter(
-    prefix="/t1",
-    tags=["async-verification"]
+    prefix="/verification",
+    tags=["Verification"]
 )
 
 # 1. ASYNC DATABASE VERIFICATION
@@ -47,7 +48,7 @@ async def test_async_database():
         "execution_time": f"{execution_time:.2f} seconds",
         "expected_time": "~1 second (if truly async)",
         "actual_async": execution_time < 2.0,
-        "explanation": "If sync: ~3 seconds, If async: ~1 second"
+        "explanation": "If sync: ~3 seconds, If async: ~1 second",
     }
 
 
@@ -71,7 +72,7 @@ async def test_concurrent_handling():
         "processing_time": f"{end_time - start_time:.2f} seconds",
         "thread_id": thread_id,
         "process_id": process_id,
-        "timestamp": time.time()
+        "timestamp": time.time(),
     }
 
 
@@ -106,7 +107,7 @@ async def test_async_operations():
         "total_execution_time": f"{total_time:.2f} seconds",
         "expected_time": "~1.0 seconds (max delay)",
         "is_truly_async": total_time < 1.5,
-        "explanation": "If sync: ~2.6s (sum of delays), If async: ~1.0s (max delay)"
+        "explanation": "If sync: ~2.6s (sum of delays), If async: ~1.0s (max delay)",
     }
 
 
@@ -132,9 +133,16 @@ async def test_sync_vs_async():
     sync_time_estimate = 0.1 * 10  # 10 operations × 0.1s each
     
     return {
-        'async_results': len(async_results),
-        'async_time': f"{async_time:.3f} seconds",
-        'estimated_sync_time': f"{sync_time_estimate:.3f} seconds",
-        'performance_improvement': f"{sync_time_estimate / async_time:.1f}x faster",
-        'is_truly_async': async_time < 0.3  # Should be ~0.1s, not ~1.0s
+        "async_results": len(async_results),
+        "async_time": f"{async_time:.3f} seconds",
+        "estimated_sync_time": f"{sync_time_estimate:.3f} seconds",
+        "performance_improvement": f"{sync_time_estimate / async_time:.1f}x faster",
+        "is_truly_async": async_time < 0.3,
     }
+
+
+@verification_router.post("/load-test", response_model=LoadTestResult)
+async def trigger_load_test(config: LoadTestConfig) -> LoadTestResult:
+    """Run a configurable HTTP load test and return aggregated metrics."""
+
+    return await run_load_test(config)
