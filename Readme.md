@@ -1,3 +1,7 @@
+# Before running 
+  run redis server
+       redis-server
+
 # ==========================================
 # ALEMBIC COMMANDS - COMPLETE REFERENCE
 # ==========================================
