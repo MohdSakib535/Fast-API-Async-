@@ -38,3 +38,7 @@ typing-inspection==0.4.1
 typing_extensions==4.14.0
 uvicorn==0.34.3
 Faker==33.3.1
+pytest==8.3.4
+pytest-asyncio==0.24.0
+# SQLite async driver for tests
+aiosqlite==0.20.0

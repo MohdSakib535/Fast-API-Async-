@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional,List
 from ..books.schemas import BookBase
 
@@ -24,8 +24,7 @@ class CreateRole(BaseModel):
 class RoleResponse(CreateRole):
     id:int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 
@@ -33,8 +32,7 @@ class RoleOut(BaseModel):
     id: int
     name: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class meResponse(BaseModel):
@@ -44,14 +42,12 @@ class meResponse(BaseModel):
     role: RoleResponse  # Nested role object
     
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class meBookResponse(meResponse):
     books: Optional[List[BookBase]] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 
@@ -60,8 +56,7 @@ class UserBase(BaseModel):
     name: str
     email: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UserWithRole(UserBase):
@@ -85,8 +80,7 @@ class UserResponse(BaseModel):
     email: str
     role_id:int
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 

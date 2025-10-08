@@ -1,14 +1,13 @@
 from datetime import date, datetime
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class GenreBase(BaseModel):
     name: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class GenreCreate(GenreBase):
@@ -28,8 +27,7 @@ class BookDetailBase(BaseModel):
     summary: Optional[str] = None
     cover_image_url: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class BookDetailCreate(BookDetailBase):
@@ -54,8 +52,7 @@ class BookBase(BaseModel):
     page_count: int
     language: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class BookCreate(BookBase):
@@ -79,8 +76,7 @@ class BookReviewBase(BaseModel):
     rating: int
     comment: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class BookReviewCreate(BookReviewBase):
@@ -107,5 +103,4 @@ class BookResponse(BookBase):
     genres: list[GenreResponse] = Field(default_factory=list)
     reviews: list[BookReviewResponse] = Field(default_factory=list)
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

@@ -4,10 +4,15 @@ from contextlib import asynccontextmanager
 from app.books.routers import  book_router
 from app.Database.async_verification_routers import verification_router
 from .auth.routers import user_router
-from .config.errors import *
-from .middleware import SchemaValidationMiddleware, setup_middlewares
+# from .config.errors import *
+from .middleware import RequestLoggingMiddleware, SchemaValidationMiddleware
 from .seeder import seed_router
+import logging
 
+logging.basicConfig(
+    level=logging.INFO,  # or DEBUG for more details
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
 
 """
 In FastAPI, the lifespan is used to define startup and shutdown events — things you want to initialize once when the app starts, and clean up once when it stops.
@@ -48,8 +53,8 @@ app = FastAPI(
 
 
 
-register_all_errors(app)
-setup_middlewares(app)
+# register_all_errors(app)
+app.add_middleware(RequestLoggingMiddleware)
 app.add_middleware(SchemaValidationMiddleware)
 
 app.include_router(book_router)

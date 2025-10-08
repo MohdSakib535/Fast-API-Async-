@@ -15,7 +15,7 @@ from collections import Counter
 from typing import Any, Dict, Iterable, Optional
 
 import httpx
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class LoadTestConfig(BaseModel):
@@ -36,8 +36,8 @@ class LoadTestConfig(BaseModel):
         description="Query parameters to append to the request",
     )
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "url": "http://localhost:8000/book/all",
                 "method": "GET",
@@ -46,6 +46,7 @@ class LoadTestConfig(BaseModel):
                 "timeout": 5.0,
             }
         }
+    )
 
 
 class LoadTestResult(BaseModel):
