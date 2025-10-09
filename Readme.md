@@ -1,4 +1,15 @@
-# Before running 
+# SonarQube coverage integration
+- Start the latest SonarQube server locally (Docker): `docker run -d --name sonarqube -p 9000:9000 sonarsource/sonarqube:latest`
+- Install the latest SonarScanner CLI (macOS: `brew update && brew install sonar-scanner`; manual download: https://docs.sonarsource.com/sonarqube/latest/analyzing-source-code/scanners/sonarscanner/)
+- From http://localhost:9000 create a project + generate a user token (Administration → Security → Users → Tokens) and export it: `export SONAR_TOKEN=<token>`
+- Adjust `sonar-project.properties` to use a unique `sonar.projectKey` for your SonarQube/SonarCloud project identifier.
+- Install project deps and coverage tools: `pip install -r requirements.txt`
+- Generate coverage before each scan: `pytest --cov=app --cov-report=xml --cov-report=term`
+- Copy `.env.example` to `.env`, fill in your connection details and `SONAR_TOKEN=<token>`, then load it: `cp .env.example .env && source .env`
+- Run the scanner from the repo root: `sonar-scanner -Dsonar.host.url=http://localhost:9000`
+- Optional: instead of `.env`, keep the token in `~/.sonar/sonar-scanner.properties` with `sonar.login=<token>` to avoid passing it on the command line.
+
+# Before running
   run redis server
        redis-server
 

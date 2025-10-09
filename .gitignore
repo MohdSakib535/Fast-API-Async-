@@ -6,3 +6,8 @@ myenv
 *.DS_Store
 migrations/versions/*.py
 migrations/versions/*.pyc
+.scannerwork/
+coverage.xml
+.env
+.coverage
+*.rdb
